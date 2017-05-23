@@ -33,14 +33,29 @@ app.use((req, res, next) => {
   next()
 })
 
-io.on('connection', function(socket) {
+var sockets = io.sockets
+sockets.on('connection', function(socket) {
   console.log('A new connection has been established')
 
-  socket.on('message', function(data) {
-    console.log(data)
-    socket.emit('message', {
-      message: data.message
+  socket.on('message room', function(data) {
+    socket.broadcast.in(data.room).emit('message room', {
+      message: data.message,
+      room: data.room
     })
+  })
+
+  socket.on('join room', function(data) {
+    socket.room = data.room
+    socket.join(socket.room)
+
+    socket.emit('joined room', data)
+  })
+
+  socket.on('leave room', function(data) {
+    socket.leave(data.room)
+    socket.room = ''
+
+    socket.emit('leaved room', true)
   })
 })
 
