@@ -14,8 +14,6 @@ var io = require('socket.io')(server)
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
-// uncomment after placing your favicon in /public
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -31,6 +29,17 @@ mongoose.connect(app.get('mongo_url'))
 app.use((req, res, next) => {
   res.io = io
   next()
+})
+
+io.on('connection', function(socket) {
+  console.log('A new connection has been established')
+
+  socket.on('message', function(data) {
+    console.log(data)
+    socket.emit('message', {
+      message: data.message
+    })
+  })
 })
 
 require('./routes.js')(app)
