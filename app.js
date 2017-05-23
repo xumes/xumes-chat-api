@@ -7,6 +7,8 @@ var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 
 var app = express();
+var server = require('http').Server(app)
+var io = require('socket.io')(server)
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -25,6 +27,11 @@ app.set('mongo-port', 27017)
 app.set('mongo_db', 'xumeschat_dev')
 app.set('mongo_url', `mongodb://${app.get('mongo-host')}:$app.get('mongo-port')/${app.get('mongo_db')}`)
 mongoose.connect(app.get('mongo_url'))
+
+app.use((req, res, next) => {
+  res.io = io
+  next()
+})
 
 require('./routes.js')(app)
 
@@ -46,4 +53,7 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-module.exports = app;
+module.exports = {
+  app: app,
+  server: server
+};
